@@ -449,6 +449,16 @@ static InterpretResult run() {
                 frame = &vm.frames[vm.frameCount - 1];
                 break;
             }
+            case OP_SUPER_INVOKE: {
+                ObjString* method = READ_STRING();
+                int argCount = READ_BYTE();
+                ObjClass* superclass = AS_CLASS(pop());
+                if (!invokeFromClass(superclass, method, argCount)) {
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+                frame = &vm.frames[vm.frameCount - 1];
+                break;
+            }
             case OP_SET_PROPERTY: {
                 if (!IS_INSTANCE(peek(1))) {
                     runtimeError("Only instances have fields.");
@@ -505,12 +515,36 @@ static InterpretResult run() {
                 }
                 break;
             }
-            case OP_CLASS:
+            case OP_CLASS: {
                 push(OBJ_VAL(newClass(READ_STRING())));
                 break;
+            }
+            case OP_INHERIT: {
+                Value superclass = peek(1);
+
+                if (!IS_CLASS(superclass)) {
+                    runtimeError("Superclass must be a class.");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+
+                ObjClass* subclass = AS_CLASS(peek(0));
+                tableAddAll(&AS_CLASS(superclass)->methods,
+                            &subclass->methods);
+                pop(); // Subclass.
+                break;
+            }
             case OP_METHOD:
                 defineMethod(READ_STRING());
                 break;
+            case OP_GET_SUPER: {
+                ObjString* name = READ_STRING();
+                ObjClass* superclass = AS_CLASS(pop());
+
+                if (!bindMethod(superclass, name)) {
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+                break;
+            }
             case OP_RETURN: {
                 Value result = pop();
                 closeUpvalues(frame->slots);

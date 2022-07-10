@@ -9,7 +9,6 @@ typedef enum {
     OP_NOT,
     OP_NEGATE,
     OP_POP,
-    OP_PUSH,
     OP_DEFINE_GLOBAL,
     OP_SET_GLOBAL,
     OP_GET_GLOBAL,
@@ -20,6 +19,7 @@ typedef enum {
     OP_CLOSE_UPVALUE,
     OP_SET_PROPERTY,
     OP_GET_PROPERTY,
+    OP_GET_SUPER,
     OP_ADD,
     OP_SUBTRACT,
     OP_MULTIPLY,
@@ -36,9 +36,11 @@ typedef enum {
     OP_LOOP,
     OP_CALL,
     OP_CLOSURE,
+    OP_INHERIT,
     OP_CLASS,
     OP_METHOD,
     OP_INVOKE,
+    OP_SUPER_INVOKE,
     OP_RETURN,
 } OpCode;
 
